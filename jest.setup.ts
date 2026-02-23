@@ -1,18 +1,26 @@
-import { readFileSync } from 'fs';
+import { existsSync, readFileSync } from 'fs';
 import { resolve } from 'path';
 
-const content = readFileSync(resolve(__dirname, '.env.test'), 'utf-8');
+const envFilePathCandidates: readonly string[] = [
+  resolve(process.cwd(), '.env.test'),
+  resolve(process.cwd(), '.env.test.example'),
+];
+const envFilePath = envFilePathCandidates.find((path: string): boolean => existsSync(path));
 
-for (const line of content.split('\n')) {
-  const trimmed = line.trim();
-  if (!trimmed || trimmed.startsWith('#')) continue;
+if (envFilePath) {
+  const content = readFileSync(envFilePath, 'utf-8');
 
-  const eqIdx = trimmed.indexOf('=');
-  if (eqIdx === -1) continue;
+  for (const line of content.split('\n')) {
+    const trimmed = line.trim();
+    if (!trimmed || trimmed.startsWith('#')) continue;
 
-  const key = trimmed.slice(0, eqIdx).trim();
-  const raw = trimmed.slice(eqIdx + 1).trim();
-  const value = raw.replace(/^['"]|['"]$/g, '');
+    const eqIdx = trimmed.indexOf('=');
+    if (eqIdx === -1) continue;
 
-  process.env[key] ??= value;
+    const key = trimmed.slice(0, eqIdx).trim();
+    const raw = trimmed.slice(eqIdx + 1).trim();
+    const value = raw.replace(/^['"]|['"]$/g, '');
+
+    process.env[key] ??= value;
+  }
 }
