@@ -130,6 +130,20 @@ SIWE flow, endpoints, and validation are described in the sections above (SIWE o
 ### Swagger
 - `GET /swagger`
 
+## Postman and Sign Helper
+
+- Postman collection: `test/postman/postman-collection.json`
+- Postman guide: `test/postman/README.md`
+- SIWE sign helper scripts: `test/sign/`
+- Sign helper guide: `test/sign/README.md`
+
+Quick run for signing:
+
+```bash
+cp test/sign/.env.example test/sign/.env
+node --env-file=test/sign/.env test/sign/sign-siwe.mjs
+```
+
 ## Verification
 
 ```bash

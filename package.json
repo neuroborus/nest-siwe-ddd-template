@@ -22,7 +22,8 @@
     "test:cov": "jest --coverage",
     "test:debug": "node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand",
     "test:e2e": "jest --testPathPattern=e2e-spec",
-        "migration:generate": "node --env-file-if-exists=.env -r tsconfig-paths/register node_modules/ts-node/dist/bin.js ./node_modules/typeorm/cli.js migration:generate -d src/database/data-source.ts",
+    "test:sign": "node --env-file=test/sign/.env test/sign/sign-siwe.mjs",
+    "migration:generate": "node --env-file-if-exists=.env -r tsconfig-paths/register node_modules/ts-node/dist/bin.js ./node_modules/typeorm/cli.js migration:generate -d src/database/data-source.ts",
     "migration:run": "node --env-file-if-exists=.env -r tsconfig-paths/register node_modules/ts-node/dist/bin.js ./node_modules/typeorm/cli.js migration:run -d src/database/data-source.ts",
     "migration:revert": "node --env-file-if-exists=.env -r tsconfig-paths/register node_modules/ts-node/dist/bin.js ./node_modules/typeorm/cli.js migration:revert -d src/database/data-source.ts"
   },
@@ -60,6 +61,7 @@
     "@types/supertest": "^6.0.0",
     "@typescript-eslint/eslint-plugin": "^8.42.0",
     "@typescript-eslint/parser": "^8.42.0",
+    "ethers": "^6.16.0",
     "eslint": "^10.0.0",
     "jest": "^30.0.0",
     "prettier": "^3.0.0",

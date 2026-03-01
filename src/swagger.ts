@@ -1,5 +1,6 @@
 import { INestApplication } from '@nestjs/common';
 import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
+import { ErrorResponseDto } from '@/infrastructure/swagger';
 
 export const SWAGGER_URL = '/swagger';
 
@@ -11,6 +12,8 @@ export async function setupSwagger(app: INestApplication): Promise<void> {
     .addBearerAuth()
     .build();
 
-  const document = SwaggerModule.createDocument(app, config);
+  const document = SwaggerModule.createDocument(app, config, {
+    extraModels: [ErrorResponseDto],
+  });
   SwaggerModule.setup(SWAGGER_URL, app, document);
 }

@@ -1,0 +1,278 @@
+{
+  "info": {
+    "_postman_id": "bd56387a-0bf9-4d39-bbfd-be3f1ffba665",
+    "name": "Nest SIWE Template API",
+    "description": "# Nest SIWE Template\n\nTemplate Postman collection for SIWE authentication and ops health endpoints.\n\nRun requests in order:\n1. `Auth / 1 - SIWE nonce`\n2. Build and sign an EIP-4361 SIWE message with the returned nonce\n3. `Auth / 2 - SIWE verify` (saves `access_token` and `refresh_token` variables)\n4. Use `Auth / test access` or `Auth / logout` with Bearer `{{access_token}}`\n5. Use `Auth / refresh tokens` to rotate tokens via refresh cookie\n\n`Ops / Health` is public and does not require authentication.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "auth": {
+    "type": "bearer",
+    "bearer": [
+      {
+        "key": "token",
+        "value": "{{access_token}}",
+        "type": "string"
+      }
+    ]
+  },
+  "event": [
+    {
+      "listen": "prerequest",
+      "script": {
+        "type": "text/javascript",
+        "exec": [
+          "// Init: set default base_url if not set",
+          "const baseUrl = pm.collectionVariables.get('base_url');",
+          "if (!baseUrl || baseUrl.trim() === '') {",
+          "    pm.collectionVariables.set('base_url', 'http://localhost:3000');",
+          "}"
+        ]
+      }
+    },
+    {
+      "listen": "test",
+      "script": {
+        "type": "text/javascript",
+        "exec": []
+      }
+    }
+  ],
+  "variable": [
+    {
+      "key": "base_url",
+      "value": "http://localhost:3000"
+    },
+    {
+      "key": "access_token",
+      "value": ""
+    },
+    {
+      "key": "refresh_token",
+      "value": ""
+    }
+  ],
+  "item": [
+    {
+      "name": "Auth",
+      "item": [
+        {
+          "name": "1 - SIWE nonce",
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/v1/auth/siwe/nonce",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "v1",
+                "auth",
+                "siwe",
+                "nonce"
+              ]
+            },
+            "description": "Creates nonce for SIWE. Response: `{ \"nonce\", \"expiresAt\" }`. Then build the SIWE message and sign it with your wallet, then call \"2 - SIWE verify\"."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 201', function () { pm.response.to.have.status(201); });",
+                  "const json = pm.response.json();",
+                  "pm.test('Has nonce', function () { pm.expect(json).to.have.property('nonce'); });"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "2 - SIWE verify",
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"message\": \"<SIWE message from wallet>\",\n  \"signature\": \"0x...\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/v1/auth/siwe/verify",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "v1",
+                "auth",
+                "siwe",
+                "verify"
+              ]
+            },
+            "description": "Verify SIWE signature and create session. Body: `message` (EIP-4361 string), `signature` (0x + 130 hex). Test script saves access_token and refresh_token to collection variables."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 201', function () { pm.response.to.have.status(201); });",
+                  "const res = pm.response.json();",
+                  "if (res.accessToken) pm.collectionVariables.set('access_token', res.accessToken);",
+                  "if (res.refreshToken) pm.collectionVariables.set('refresh_token', res.refreshToken);"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "logout",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/v1/auth/logout",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "v1",
+                "auth",
+                "logout"
+              ]
+            },
+            "description": "Logout and destroy session. Requires Bearer. Returns 204."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 204', function () { pm.response.to.have.status(204); });"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "test access",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/v1/auth/access",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "v1",
+                "auth",
+                "access"
+              ]
+            },
+            "description": "Access check: returns current user ethAddress. Requires Bearer."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200', function () { pm.response.to.have.status(200); });"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "refresh tokens",
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/v1/auth/refresh-tokens",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "v1",
+                "auth",
+                "refresh-tokens"
+              ]
+            },
+            "description": "Refresh tokens via refreshToken cookie (must be set after login/verify). Test script updates access_token and refresh_token in collection variables."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 201', function () { pm.response.to.have.status(201); });",
+                  "const res = pm.response.json();",
+                  "if (res.accessToken) pm.collectionVariables.set('access_token', res.accessToken);",
+                  "if (res.refreshToken) pm.collectionVariables.set('refresh_token', res.refreshToken);"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Ops",
+      "item": [
+        {
+          "name": "Health",
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/ops/health",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "ops",
+                "health"
+              ]
+            },
+            "description": "Health check. Response: { status, db, timestamp }."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200', function () { pm.response.to.have.status(200); });",
+                  "const json = pm.response.json();",
+                  "pm.test('Has status', function () { pm.expect(json).to.have.property('status'); });"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

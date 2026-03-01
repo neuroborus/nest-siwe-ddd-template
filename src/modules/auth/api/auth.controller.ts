@@ -10,6 +10,7 @@ import {
   HttpStatus,
 } from '@nestjs/common';
 import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
+import { ErrorResponseDto } from '@/infrastructure/swagger';
 import { CookieOptions, Request, Response } from 'express';
 import { staticConfig, NodeEnv } from '@/config';
 import { RequestContext } from '@/infrastructure/request';
@@ -74,6 +75,16 @@ export class AuthController {
   @HttpCode(HttpStatus.CREATED)
   @ApiOperation({ summary: 'Verify SIWE message and create session' })
   @ApiResponse({ status: HttpStatus.CREATED, type: LoginResponseDto })
+  @ApiResponse({
+    status: HttpStatus.BAD_REQUEST,
+    description: 'Validation failed (body)',
+    type: ErrorResponseDto,
+  })
+  @ApiResponse({
+    status: HttpStatus.UNAUTHORIZED,
+    description: 'Invalid SIWE message or signature',
+    type: ErrorResponseDto,
+  })
   @SerializeOptions({ type: LoginResponseDto })
   async verifySiwe(
     @Body() body: LoginRequestDto,
@@ -100,6 +111,11 @@ export class AuthController {
   @HttpCode(HttpStatus.CREATED)
   @ApiOperation({ summary: 'Refresh access and refresh tokens' })
   @ApiResponse({ status: HttpStatus.CREATED, type: LoginResponseDto })
+  @ApiResponse({
+    status: HttpStatus.UNAUTHORIZED,
+    description: 'No refresh cookie or invalid token',
+    type: ErrorResponseDto,
+  })
   @SerializeOptions({ type: LoginResponseDto })
   async refresh(
     @Req() req: Request,
