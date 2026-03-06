@@ -129,6 +129,7 @@ SIWE flow, endpoints, and validation are described in the sections above (SIWE o
 
 ### Swagger
 - `GET /swagger`
+- Compatible with [`cloudflared-alias`](https://github.com/neuroborus/cloudflared-alias) path mode: Swagger respects `X-Forwarded-Prefix` and keeps "Try it out" requests under `/<key>/...`.
 
 ## Postman and Sign Helper
 
