@@ -11,15 +11,15 @@ jest.mock('@nestjs/swagger', () => ({
   ApiProperty: () => () => undefined,
   ApiPropertyOptional: () => () => undefined,
   DocumentBuilder: class {
-    public setTitle(_title: string): this {
+    public setTitle(): this {
       return this;
     }
 
-    public setDescription(_description: string): this {
+    public setDescription(): this {
       return this;
     }
 
-    public setVersion(_version: string): this {
+    public setVersion(): this {
       return this;
     }
 
